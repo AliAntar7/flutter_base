@@ -1,23 +1,20 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'env_keys.dart';
+
 /// Provides the application's strongly typed configuration values.
 abstract final class AppConfig {
-  static const _appNameKey = 'APP_NAME';
-  static const _baseUrlKey = 'BASE_URL';
-  static const _isDebugKey = 'IS_DEBUG';
-  static const _enableLoggerKey = 'ENABLE_LOGGER';
-
   /// The configured application name.
-  static String get appName => _requiredValue(_appNameKey);
+  static String get appName => _requiredValue(EnvKeys.appName);
 
   /// The configured base URL.
-  static String get baseUrl => _requiredValue(_baseUrlKey);
+  static String get baseUrl => _requiredValue(EnvKeys.baseUrl);
 
   /// Whether debug behavior is enabled.
-  static bool get isDebug => _boolValue(_isDebugKey);
+  static bool get isDebug => _boolValue(EnvKeys.isDebug);
 
   /// Whether application logging is enabled.
-  static bool get enableLogger => _boolValue(_enableLoggerKey);
+  static bool get enableLogger => _boolValue(EnvKeys.enableLogger);
 
   static String _requiredValue(String key) {
     _ensureLoaded();

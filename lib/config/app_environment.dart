@@ -8,10 +8,10 @@ abstract final class AppEnvironment {
   /// The current application flavor.
   static AppFlavor get current => _current;
 
-  /// Sets the application flavor once during application startup.
+  /// Initializes the application flavor once during application startup.
   ///
   /// Calling this method more than once is an application configuration error.
-  static void setFlavor(AppFlavor flavor) {
+  static void initialize(AppFlavor flavor) {
     if (_wasConfigured) {
       throw StateError('The application flavor has already been configured.');
     }
