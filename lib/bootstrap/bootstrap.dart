@@ -7,6 +7,7 @@ import '../config/app_config.dart';
 import '../config/app_environment.dart';
 import '../config/app_flavor.dart';
 import '../core/logger/logger.dart';
+import '../core/storage/storage.dart';
 
 /// Prepares the application and runs the root widget.
 Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
@@ -22,12 +23,15 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   // 4. Initialize Firebase.
   // TODO(Ali): Initialize Firebase.
 
-  // 5. Register dependency injection.
+  // 5. Initialize local storage.
+  await Storage.initialize();
+
+  // 6. Register dependency injection.
   // TODO(Ali): Register dependency injection.
 
-  // 6. Configure logging.
+  // 7. Configure logging.
   AppLogger.initialize(enabled: AppConfig.enableLogger);
 
-  // 7. Build and run the application.
+  // 8. Build and run the application.
   runApp(await builder());
 }
