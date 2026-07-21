@@ -26,11 +26,16 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
 
   // 4. Initialize Firebase.
   final firebase = AppFirebase();
-  await firebase.initialize();
+  // TODO(Ali): Re-enable Firebase after adding the platform configuration
+  // files, such as ios/Runner/GoogleService-Info.plist.
+  // await firebase.initialize();
 
   // 5. Initialize notifications.
   final notifications = Notifications();
-  await notifications.initialize();
+  // Notifications depend on Firebase Messaging, so keep them disabled until
+  // Firebase has been configured.
+  // TODO(Ali): Re-enable notifications after Firebase initialization.
+  // await notifications.initialize();
 
   // 6. Initialize local storage.
   final storage = Storage();
