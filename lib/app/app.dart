@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/localization/localization.dart';
 import '../core/router/router.dart';
+import '../core/theme/theme.dart';
 
 /// The root widget of the application.
 final class App extends StatefulWidget {
@@ -33,9 +35,20 @@ final class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: _router.routerConfig,
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
+    return AppLocalization.wrap(
+      Builder(
+        builder: (context) {
+          return MaterialApp.router(
+            routerConfig: _router.routerConfig,
+            locale: AppLocalization.localeOf(context),
+            supportedLocales: AppLocalization.supportedLocalesOf(context),
+            localizationsDelegates: AppLocalization.delegatesOf(context),
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: ThemeMode.system,
+          );
+        },
+      ),
     );
   }
 }
@@ -53,12 +66,14 @@ final class _HomePageState extends State<_HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Flutter Demo Home Page')),
+      appBar: AppBar(
+        title: Text(AppLocalization.translate(context, 'home.title')),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: .center,
           children: [
-            const Text('You have pushed the button this many times:'),
+            Text(AppLocalization.translate(context, 'home.counter_message')),
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
@@ -68,7 +83,7 @@ final class _HomePageState extends State<_HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => setState(() => _counter++),
-        tooltip: 'Increment',
+        tooltip: AppLocalization.translate(context, 'home.increment'),
         child: const Icon(Icons.add),
       ),
     );

@@ -1,0 +1,7 @@
+{
+  "home": {
+    "title": "Flutter Demo Home Page",
+    "counter_message": "You have pushed the button this many times:",
+    "increment": "Increment"
+  }
+}
