@@ -5,35 +5,16 @@ import '../logger/logger.dart';
 import '../storage/storage.dart';
 
 /// Provides the application's HTTP API without exposing Dio.
-abstract final class Network {
-  static const _accessTokenKey = 'access_token';
-  static const _refreshTokenKey = 'refresh_token';
-  static const _refreshPath = '/auth/refresh';
-  static const _accessTokenField = 'access_token';
-  static const _refreshTokenField = 'refresh_token';
-  static const _retryCountKey = 'network_retry_count';
-  static const _tokenRetryKey = 'network_token_retry';
-  static const _skipAuthKey = 'network_skip_auth';
-  static const _skipCacheKey = 'network_skip_cache';
-  static const _maxRetries = 3;
-  static const _cacheTtl = Duration(minutes: 5);
-
-  static Dio? _dio;
-  static Dio? _refreshDio;
-  static bool _wasInitialized = false;
-  static Future<String?>? _refreshFuture;
-  static final Map<String, ({Object? data, DateTime expiresAt})> _cache = {};
-
-  /// Initializes the HTTP client once during application startup.
-  static Future<void> initialize() async {
-    if (_wasInitialized) {
-      throw StateError('The network client has already been initialized.');
-    }
-
-    final baseUrl = AppConfig.baseUrl;
-    _dio = Dio(_options(baseUrl));
-    _refreshDio = Dio(_options(baseUrl));
-    _dio!.interceptors.add(
+final class Network {
+  Network({
+    required Storage storage,
+    required AppLogger logger,
+    String? baseUrl,
+  }) : _storage = storage,
+       _logger = logger,
+       _dio = Dio(_options(baseUrl ?? AppConfig.baseUrl)),
+       _refreshDio = Dio(_options(baseUrl ?? AppConfig.baseUrl)) {
+    _dio.interceptors.add(
       QueuedInterceptorsWrapper(
         onRequest: (options, handler) async {
           await _attachAccessToken(options);
@@ -48,11 +29,29 @@ abstract final class Network {
         },
       ),
     );
-    _wasInitialized = true;
   }
 
+  static const _accessTokenKey = 'access_token';
+  static const _refreshTokenKey = 'refresh_token';
+  static const _refreshPath = '/auth/refresh';
+  static const _accessTokenField = 'access_token';
+  static const _refreshTokenField = 'refresh_token';
+  static const _retryCountKey = 'network_retry_count';
+  static const _tokenRetryKey = 'network_token_retry';
+  static const _skipAuthKey = 'network_skip_auth';
+  static const _skipCacheKey = 'network_skip_cache';
+  static const _maxRetries = 3;
+  static const _cacheTtl = Duration(minutes: 5);
+
+  final Storage _storage;
+  final AppLogger _logger;
+  final Dio _dio;
+  final Dio _refreshDio;
+  Future<String?>? _refreshFuture;
+  final Map<String, ({Object? data, DateTime expiresAt})> _cache = {};
+
   /// Sends a GET request and returns its decoded response data.
-  static Future<T?> get<T>(
+  Future<T?> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
     T? Function(Object? data)? decoder,
@@ -68,7 +67,7 @@ abstract final class Network {
   }
 
   /// Sends a POST request and returns its decoded response data.
-  static Future<T?> post<T>(
+  Future<T?> post<T>(
     String path, {
     Object? data,
     Map<String, dynamic>? queryParameters,
@@ -84,7 +83,7 @@ abstract final class Network {
   }
 
   /// Sends a PUT request and returns its decoded response data.
-  static Future<T?> put<T>(
+  Future<T?> put<T>(
     String path, {
     Object? data,
     Map<String, dynamic>? queryParameters,
@@ -100,7 +99,7 @@ abstract final class Network {
   }
 
   /// Sends a DELETE request and returns its decoded response data.
-  static Future<T?> delete<T>(
+  Future<T?> delete<T>(
     String path, {
     Object? data,
     Map<String, dynamic>? queryParameters,
@@ -116,11 +115,11 @@ abstract final class Network {
   }
 
   /// Removes all cached GET responses.
-  static void clearCache() {
+  void clearCache() {
     _cache.clear();
   }
 
-  static Future<T?> _request<T>({
+  Future<T?> _request<T>({
     required String method,
     required String path,
     Object? data,
@@ -128,7 +127,7 @@ abstract final class Network {
     T? Function(Object? data)? decoder,
     bool useCache = false,
   }) async {
-    final response = await _requireDio().request<Object?>(
+    final response = await _dio.request<Object?>(
       path,
       data: data,
       queryParameters: queryParameters,
@@ -149,12 +148,12 @@ abstract final class Network {
     );
   }
 
-  static Future<void> _attachAccessToken(RequestOptions options) async {
+  Future<void> _attachAccessToken(RequestOptions options) async {
     if (options.extra[_skipAuthKey] == true) {
       return;
     }
 
-    final accessToken = await Storage.readSecure(_accessTokenKey);
+    final accessToken = await _storage.readSecure(_accessTokenKey);
     if (accessToken == null || accessToken.isEmpty) {
       return;
     }
@@ -162,7 +161,7 @@ abstract final class Network {
     options.headers['Authorization'] = 'Bearer $accessToken';
   }
 
-  static void _serveCachedResponse(
+  void _serveCachedResponse(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) {
@@ -194,7 +193,7 @@ abstract final class Network {
     );
   }
 
-  static void _cacheResponse(Response<dynamic> response) {
+  void _cacheResponse(Response<dynamic> response) {
     final options = response.requestOptions;
     final method = options.method.toUpperCase();
     final statusCode = response.statusCode ?? 0;
@@ -216,7 +215,7 @@ abstract final class Network {
     }
   }
 
-  static Future<void> _handleError(
+  Future<void> _handleError(
     DioException error,
     ErrorInterceptorHandler handler,
   ) async {
@@ -231,7 +230,7 @@ abstract final class Network {
         options.headers['Authorization'] = 'Bearer $accessToken';
 
         try {
-          final response = await _requireDio().fetch<Object?>(options);
+          final response = await _dio.fetch<Object?>(options);
           handler.resolve(response);
           return;
         } on DioException catch (retryError) {
@@ -250,7 +249,7 @@ abstract final class Network {
         );
 
         try {
-          final response = await _requireDio().fetch<Object?>(options);
+          final response = await _dio.fetch<Object?>(options);
           handler.resolve(response);
           return;
         } on DioException catch (retryError) {
@@ -263,7 +262,7 @@ abstract final class Network {
     handler.next(error);
   }
 
-  static Future<String?> _refreshAccessToken() {
+  Future<String?> _refreshAccessToken() {
     final currentRefresh = _refreshFuture;
     if (currentRefresh != null) {
       return currentRefresh;
@@ -277,14 +276,14 @@ abstract final class Network {
     return trackedFuture;
   }
 
-  static Future<String?> _performTokenRefresh() async {
-    final refreshToken = await Storage.readSecure(_refreshTokenKey);
+  Future<String?> _performTokenRefresh() async {
+    final refreshToken = await _storage.readSecure(_refreshTokenKey);
     if (refreshToken == null || refreshToken.isEmpty) {
       return null;
     }
 
     try {
-      final response = await _refreshDio!.post<Object?>(
+      final response = await _refreshDio.post<Object?>(
         _refreshPath,
         data: {_refreshTokenField: refreshToken},
       );
@@ -301,16 +300,16 @@ abstract final class Network {
         return null;
       }
 
-      await Storage.writeSecure(_accessTokenKey, accessToken);
+      await _storage.writeSecure(_accessTokenKey, accessToken);
 
       final newRefreshToken = responseData[_refreshTokenField];
       if (newRefreshToken is String && newRefreshToken.isNotEmpty) {
-        await Storage.writeSecure(_refreshTokenKey, newRefreshToken);
+        await _storage.writeSecure(_refreshTokenKey, newRefreshToken);
       }
 
       return accessToken;
     } on DioException catch (error, stackTrace) {
-      AppLogger.error(
+      _logger.error(
         'Token refresh failed.',
         error: error,
         stackTrace: stackTrace,
@@ -320,9 +319,9 @@ abstract final class Network {
     }
   }
 
-  static Future<void> _clearTokens() async {
-    await Storage.deleteSecure(_accessTokenKey);
-    await Storage.deleteSecure(_refreshTokenKey);
+  Future<void> _clearTokens() async {
+    await _storage.deleteSecure(_accessTokenKey);
+    await _storage.deleteSecure(_refreshTokenKey);
   }
 
   static bool _shouldRetry(DioException error) {
@@ -361,13 +360,5 @@ abstract final class Network {
 
   static bool _isSuccessful(int statusCode) {
     return statusCode >= 200 && statusCode < 300;
-  }
-
-  static Dio _requireDio() {
-    if (!_wasInitialized) {
-      throw StateError('The network client must be initialized first.');
-    }
-
-    return _dio!;
   }
 }

@@ -1,11 +1,11 @@
 import 'package:firebase_core/firebase_core.dart' as firebase_core;
 
 /// Provides Firebase Core initialization for the application.
-abstract final class AppFirebase {
-  static bool _wasInitialized = false;
+final class AppFirebase {
+  bool _wasInitialized = false;
 
   /// Initializes Firebase once during application startup.
-  static Future<void> initialize() async {
+  Future<void> initialize() async {
     if (_wasInitialized) {
       throw StateError('Firebase has already been initialized.');
     }
