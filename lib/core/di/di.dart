@@ -4,7 +4,7 @@ import '../firebase/firebase.dart';
 import '../logger/logger.dart';
 import '../network/network.dart';
 import '../notifications/notifications.dart';
-import '../storage/storage.dart';
+import '../storage/storage_service.dart';
 
 /// Registers and resolves application dependencies.
 abstract final class DependencyInjection {
@@ -14,7 +14,7 @@ abstract final class DependencyInjection {
   /// Registers the initialized core modules once during application startup.
   static void initialize({
     required AppLogger logger,
-    required Storage storage,
+    required StorageService storage,
     required Network network,
     required AppFirebase firebase,
     required Notifications notifications,
@@ -24,7 +24,7 @@ abstract final class DependencyInjection {
     }
 
     _locator.registerSingleton<AppLogger>(logger);
-    _locator.registerSingleton<Storage>(storage);
+    _locator.registerSingleton<StorageService>(storage);
     _locator.registerSingleton<Network>(network);
     _locator.registerSingleton<AppFirebase>(firebase);
     _locator.registerSingleton<Notifications>(notifications);

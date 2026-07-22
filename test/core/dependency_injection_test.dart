@@ -5,12 +5,12 @@ import 'package:flutter_base/core/firebase/firebase.dart';
 import 'package:flutter_base/core/logger/logger.dart';
 import 'package:flutter_base/core/network/network.dart';
 import 'package:flutter_base/core/notifications/notifications.dart';
-import 'package:flutter_base/core/storage/storage.dart';
+import 'package:flutter_base/core/storage/storage_service.dart';
 
 void main() {
   test('registers core instances and resolves them by type', () {
     final logger = AppLogger(enabled: false);
-    final storage = Storage();
+    final storage = StorageService();
     final network = Network(
       baseUrl: 'https://example.com',
       storage: storage,
@@ -28,7 +28,7 @@ void main() {
     );
 
     expect(DependencyInjection.get<AppLogger>(), same(logger));
-    expect(DependencyInjection.get<Storage>(), same(storage));
+    expect(DependencyInjection.get<StorageService>(), same(storage));
     expect(DependencyInjection.get<Network>(), same(network));
     expect(DependencyInjection.get<AppFirebase>(), same(firebase));
     expect(DependencyInjection.get<Notifications>(), same(notifications));

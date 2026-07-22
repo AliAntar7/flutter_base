@@ -1,13 +1,14 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_base/core/storage/storage_keys.dart';
 
 import '../../config/app_config.dart';
 import '../logger/logger.dart';
-import '../storage/storage.dart';
+import '../storage/storage_service.dart';
 
 /// Provides the application's HTTP API without exposing Dio.
 final class Network {
   Network({
-    required Storage storage,
+    required StorageService storage,
     required AppLogger logger,
     String? baseUrl,
   }) : _storage = storage,
@@ -31,8 +32,6 @@ final class Network {
     );
   }
 
-  static const _accessTokenKey = 'access_token';
-  static const _refreshTokenKey = 'refresh_token';
   static const _refreshPath = '/auth/refresh';
   static const _accessTokenField = 'access_token';
   static const _refreshTokenField = 'refresh_token';
@@ -43,7 +42,7 @@ final class Network {
   static const _maxRetries = 3;
   static const _cacheTtl = Duration(minutes: 5);
 
-  final Storage _storage;
+  final StorageService _storage;
   final AppLogger _logger;
   final Dio _dio;
   final Dio _refreshDio;
@@ -153,7 +152,7 @@ final class Network {
       return;
     }
 
-    final accessToken = await _storage.readSecure(_accessTokenKey);
+    final accessToken = await _storage.readSecure(StorageKeys.accessToken);
     if (accessToken == null || accessToken.isEmpty) {
       return;
     }
@@ -277,7 +276,7 @@ final class Network {
   }
 
   Future<String?> _performTokenRefresh() async {
-    final refreshToken = await _storage.readSecure(_refreshTokenKey);
+    final refreshToken = await _storage.readSecure(StorageKeys.refreshToken);
     if (refreshToken == null || refreshToken.isEmpty) {
       return null;
     }
@@ -300,11 +299,11 @@ final class Network {
         return null;
       }
 
-      await _storage.writeSecure(_accessTokenKey, accessToken);
+      await _storage.writeSecure(StorageKeys.accessToken, accessToken);
 
       final newRefreshToken = responseData[_refreshTokenField];
       if (newRefreshToken is String && newRefreshToken.isNotEmpty) {
-        await _storage.writeSecure(_refreshTokenKey, newRefreshToken);
+        await _storage.writeSecure(StorageKeys.refreshToken, newRefreshToken);
       }
 
       return accessToken;
@@ -320,8 +319,8 @@ final class Network {
   }
 
   Future<void> _clearTokens() async {
-    await _storage.deleteSecure(_accessTokenKey);
-    await _storage.deleteSecure(_refreshTokenKey);
+    await _storage.deleteSecure(StorageKeys.accessToken);
+    await _storage.deleteSecure(StorageKeys.refreshToken);
   }
 
   static bool _shouldRetry(DioException error) {

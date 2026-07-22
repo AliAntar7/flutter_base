@@ -11,7 +11,7 @@ import '../core/firebase/firebase.dart';
 import '../core/logger/logger.dart';
 import '../core/network/network.dart';
 import '../core/notifications/notifications.dart';
-import '../core/storage/storage.dart';
+import '../core/storage/storage_service.dart';
 
 /// Prepares the application and runs the root widget.
 Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
@@ -38,7 +38,7 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   // await notifications.initialize();
 
   // 6. Initialize local storage.
-  final storage = Storage();
+  final storage = StorageService();
 
   // 7. Configure logging.
   final logger = AppLogger(enabled: AppConfig.enableLogger);
