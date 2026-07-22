@@ -1,29 +1,82 @@
 import 'package:logger/logger.dart' as logger_package;
 
 /// Provides the application's logging API.
-final class AppLogger {
-  AppLogger({required bool enabled})
-    : _logger = enabled ? logger_package.Logger() : null;
+///
+/// Features should never interact with the `logger` package directly.
+/// All logging goes through this class.
+abstract final class AppLogger {
+  static late final logger_package.Logger _logger;
 
-  final logger_package.Logger? _logger;
+  static bool _enabled = false;
+
+  /// Initializes the logger.
+  ///
+  /// Must be called once during application bootstrap.
+  static void initialize({
+    required bool enableLogging,
+  }) {
+    _enabled = enableLogging;
+
+    _logger = logger_package.Logger();
+  }
 
   /// Logs a debug message.
-  void debug(Object message, {Object? error, StackTrace? stackTrace}) {
-    _logger?.d(message, error: error, stackTrace: stackTrace);
+  static void debug(
+      Object message, {
+        Object? error,
+        StackTrace? stackTrace,
+      }) {
+    if (!_enabled) return;
+
+    _logger.d(
+      message,
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   /// Logs an informational message.
-  void info(Object message, {Object? error, StackTrace? stackTrace}) {
-    _logger?.i(message, error: error, stackTrace: stackTrace);
+  static void info(
+      Object message, {
+        Object? error,
+        StackTrace? stackTrace,
+      }) {
+    if (!_enabled) return;
+
+    _logger.i(
+      message,
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   /// Logs a warning message.
-  void warning(Object message, {Object? error, StackTrace? stackTrace}) {
-    _logger?.w(message, error: error, stackTrace: stackTrace);
+  static void warning(
+      Object message, {
+        Object? error,
+        StackTrace? stackTrace,
+      }) {
+    if (!_enabled) return;
+
+    _logger.w(
+      message,
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   /// Logs an error message.
-  void error(Object message, {Object? error, StackTrace? stackTrace}) {
-    _logger?.e(message, error: error, stackTrace: stackTrace);
+  static void error(
+      Object message, {
+        Object? error,
+        StackTrace? stackTrace,
+      }) {
+    if (!_enabled) return;
+
+    _logger.e(
+      message,
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 }

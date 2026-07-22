@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_base/core/storage/storage_keys.dart';
-
 import '../../config/app_config.dart';
 import '../logger/logger.dart';
 import '../storage/storage_service.dart';
@@ -9,10 +8,8 @@ import '../storage/storage_service.dart';
 final class Network {
   Network({
     required StorageService storage,
-    required AppLogger logger,
     String? baseUrl,
   }) : _storage = storage,
-       _logger = logger,
        _dio = Dio(_options(baseUrl ?? AppConfig.baseUrl)),
        _refreshDio = Dio(_options(baseUrl ?? AppConfig.baseUrl)) {
     _dio.interceptors.add(
@@ -43,7 +40,6 @@ final class Network {
   static const _cacheTtl = Duration(minutes: 5);
 
   final StorageService _storage;
-  final AppLogger _logger;
   final Dio _dio;
   final Dio _refreshDio;
   Future<String?>? _refreshFuture;
@@ -308,7 +304,7 @@ final class Network {
 
       return accessToken;
     } on DioException catch (error, stackTrace) {
-      _logger.error(
+      AppLogger.error(
         'Token refresh failed.',
         error: error,
         stackTrace: stackTrace,

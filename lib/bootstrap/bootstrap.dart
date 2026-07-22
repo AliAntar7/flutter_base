@@ -41,14 +41,15 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   final storage = StorageService();
 
   // 7. Configure logging.
-  final logger = AppLogger(enabled: AppConfig.enableLogger);
+  AppLogger.initialize(
+    enableLogging: AppConfig.enableLogger,
+  );
 
   // 8. Initialize networking.
-  final network = Network(storage: storage, logger: logger);
+  final network = Network(storage: storage);
 
   // 9. Register dependency injection.
   DependencyInjection.initialize(
-    logger: logger,
     storage: storage,
     network: network,
     firebase: firebase,

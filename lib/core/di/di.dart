@@ -13,7 +13,6 @@ abstract final class DependencyInjection {
 
   /// Registers the initialized core modules once during application startup.
   static void initialize({
-    required AppLogger logger,
     required StorageService storage,
     required Network network,
     required AppFirebase firebase,
@@ -23,7 +22,6 @@ abstract final class DependencyInjection {
       throw StateError('Dependency injection has already been initialized.');
     }
 
-    _locator.registerSingleton<AppLogger>(logger);
     _locator.registerSingleton<StorageService>(storage);
     _locator.registerSingleton<Network>(network);
     _locator.registerSingleton<AppFirebase>(firebase);
