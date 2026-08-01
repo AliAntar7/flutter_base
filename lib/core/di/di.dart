@@ -1,8 +1,6 @@
 import 'package:get_it/get_it.dart';
 
 import '../firebase/firebase.dart';
-import '../logger/logger.dart';
-import '../network/network.dart';
 import '../notifications/notifications.dart';
 import '../storage/storage_service.dart';
 
@@ -14,7 +12,6 @@ abstract final class DependencyInjection {
   /// Registers the initialized core modules once during application startup.
   static void initialize({
     required StorageService storage,
-    required Network network,
     required AppFirebase firebase,
     required Notifications notifications,
   }) {
@@ -23,7 +20,6 @@ abstract final class DependencyInjection {
     }
 
     _locator.registerSingleton<StorageService>(storage);
-    _locator.registerSingleton<Network>(network);
     _locator.registerSingleton<AppFirebase>(firebase);
     _locator.registerSingleton<Notifications>(notifications);
     _wasInitialized = true;

@@ -9,7 +9,6 @@ import '../config/app_flavor.dart';
 import '../core/di/di.dart';
 import '../core/firebase/firebase.dart';
 import '../core/logger/logger.dart';
-import '../core/network/network.dart';
 import '../core/notifications/notifications.dart';
 import '../core/storage/storage_service.dart';
 
@@ -46,12 +45,10 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   );
 
   // 8. Initialize networking.
-  final network = Network(storage: storage);
 
   // 9. Register dependency injection.
   DependencyInjection.initialize(
     storage: storage,
-    network: network,
     firebase: firebase,
     notifications: notifications,
   );
